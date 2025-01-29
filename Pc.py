@@ -27,18 +27,18 @@ class JogoIncremental:
            self.limpar_tela()
 
     def limpar_tela(self):
-        os.system('cls' if os.name == 'nt' else 'clear')  # Limpa a tela no Termux e Windows   
+        os.system('cls' if os.name == 'nt' else 'clear')  # Limpa a tela no Termux e Windows
 
     def abrir(self):
     	print(f"\n VC USA PC ENTÃO CONSEGUE COPIAR E COLAR ESSE LINK NO TEU NAVEGADOR! \n http://rankandar.ddns.net:5000/")
     	time.sleep(12)
-    
+
     def atualizar_leaderboard(self):
          try:
         # Lendo o arquivo JSON
             with open(ARQUIVO_JSON, 'r', encoding='utf-8') as f:
                 progresso = json.load(f)
-        
+
         # Extraindo as informações necessárias
             nick = progresso.get("nick")
             maior_andar = progresso.get("maior_andar", 0)
@@ -188,6 +188,9 @@ class JogoIncremental:
             elif opcao == "6":
             	self.atualizar_leaderboard()
             	self.abrir()
+            elif opcao == "0":
+                self.salvar_progresso()
+                self.atualizar_leaderboard()
             elif opcao == "7":
                 self.limpar_tela()
                 print(f"Salvando progresso... ")
@@ -256,38 +259,65 @@ class JogoIncremental:
         input("...")
 
     def distribuir_status(self):
-        self.limpar_tela()
-        print(f"==== DISTRIBUIR ====")
-        print(f"PONTOS DISPONIVEIS: {self.pontos_disponiveis}")
-        print("1. Vida")
-        print("2. Força")
-        print("3. Agilidade")
-        print("4. Voltar")
+        while True:
+            self.limpar_tela()
+            print(f"==== DISTRIBUIR ====")
+            print(f"PONTOS DISPONÍVEIS: {self.pontos_disponiveis}")
+            print("1. Vida")
+            print("2. Força")
+            print("3. Agilidade")
+            print("4. Voltar")
 
-        escolha = input("Escolha um status para colocar pontos: ")
-        if escolha == "4":
-            return
+            # Verifica se ainda há pontos disponíveis
+            if self.pontos_disponiveis == 0:
+                print("Você não tem mais pontos para distribuir.")
+                time.sleep(2)
+                break
 
-        pontos = int(input("Quantos pontos? "))
-        if pontos > self.pontos_disponiveis:
-            print("Você não tem pontos suficientes!")
-            return
+            escolha = input("Escolha um status para colocar pontos: ")
+            if escolha == "4":
+                break
 
-        if escolha == "1":
-            self.vida += pontos
-        elif escolha == "2":
-            self.forca += pontos
-        elif escolha == "3":
-            self.agilidade += pontos
+            if escolha not in ["1", "2", "3"]:
+                print("Opção inválida!")
+                time.sleep(1)
+                continue
 
-        self.pontos_disponiveis -= pontos
-        print(f"Status atualizado! Vida: {self.vida}, Força: {self.forca}, Agilidade: {self.agilidade}")
-        time.sleep(1)
+            try:
+                pontos = int(input("Quantos pontos? "))
+                if pontos <= 0:
+                    print("Você deve adicionar ao menos 1 ponto!")
+                    time.sleep(1)
+                    continue
+            except ValueError:
+                print("Entrada inválida! Digite um número inteiro.")
+                time.sleep(1)
+                continue
+
+            if pontos > self.pontos_disponiveis:
+                print("\nVocê não tem pontos suficientes!")
+                time.sleep(2)
+                continue
+
+            # Atualiza os status de acordo com a escolha
+            if escolha == "1":
+                self.vida += pontos
+            elif escolha == "2":
+                self.forca += pontos
+            elif escolha == "3":
+                self.agilidade += pontos
+
+            self.pontos_disponiveis -= pontos  # Reduz os pontos disponíveis
+            print(f"Você adicionou {pontos} ponto(s)!")
+            time.sleep(1)
+
+        print("Distribuição de status concluída.")
 
     def loja(self):
         while True:
             self.limpar_tela()
             print("==== LOJA ====")
+            print(f"Ouro: {self.ouro}")
             print("Escolha uma categoria:")
             print("1. Armas")
             print("2. Botas")
@@ -318,6 +348,7 @@ class JogoIncremental:
     def loja_armas(self):
         self.limpar_tela()
         print("==== LOJA DE ARMAS ====")
+        print(f"Ouro: {self.ouro}")
         print("1. 10 Ouro - Espada de madeira (1.5x força)")
         print("2. 50 Ouro - Espada de pedra (3x força)")
         print("3. 200 Ouro - Espada de ferro (5x força)")
@@ -368,6 +399,7 @@ class JogoIncremental:
     def loja_botas(self):
         self.limpar_tela()
         print("==== LOJA DE BOTAS ====")
+        print(f"Ouro: {self.ouro}")
         print("1. 70 Ouro - Bota Ágil (2x Agi)")
         print("2. 150 Ouro - Bota Booster (4x Agi)")
         print("3. 300 Ouro - Bota Sonica (10x Agi)")
@@ -416,6 +448,7 @@ class JogoIncremental:
     def loja_coletes(self):
         self.limpar_tela()
         print("==== LOJA DE COLETES ====")
+        print(f"Ouro: {self.ouro}")
         print("1. 100 Ouro - Colete Padrão (3x Vida)")
         print("2. 300 Ouro - Colete Kevlar (6x Vida)")
         print("3. 800 Ouro - Colete Anti-Tanque (20x Vida)")
@@ -483,7 +516,18 @@ class JogoIncremental:
             # Gerar uma sequência diferente para cada fase
             tamanho_sequencia = 5 + fase  # Aumenta o tamanho a cada fase
             sequencia = random.choices(letras, k=tamanho_sequencia)
-
+            time.sleep(2)
+            self.limpar_tela()
+            time.sleep(2)
+            print("3")
+            time.sleep(1)
+            print("2")
+            time.sleep(1)
+            print("1")
+            time.sleep(1)
+            print("Começou!")
+            time.sleep(1)
+            self.limpar_tela()
             print(f"\nFase {fase}: Memorize a sequência!")
             self.mostrar_sequencia(sequencia)
 
@@ -529,11 +573,14 @@ class JogoIncremental:
                 vida = self.vida
 
             chance_vitoria = random.random()
-            dificuldade = 0.1 * self.andar_atual * 2
+            dificuldade = 0.2 * self.andar_atual * 2
             chance_de_vencer = (vida / 200) + (agilidade / 100) + (dano / 100) - dificuldade
 
             if self.andar_atual % 100 == 0:  # RAID BOSS a cada 100 andares
-                print("RAID BOSS ENCONTRADO!")
+                self.limpar_tela()
+                print("             RAID BOSS ENCONTRADO!")
+                print("Para derrotar o RAID BOSS você precisa ganhar do BOSS em 5 turnos de PEDRA PAPEL E TESOURA")
+                input("\n\nPressione ENTER para iniciar o combate...")
                 if not self.minigame_pedra_papel_tesoura():
                     print("Voltando para o primeiro andar.")
                     self.derrotas += 1
@@ -556,7 +603,9 @@ class JogoIncremental:
                 self.andar_atual += 1
 
                 if self.andar_atual % 10 == 0:
-                    print("BOSS ENCONTRADO!")
+                    self.limpar_tela()
+                    print("                 BOSS ENCONTRADO!")
+                    input("\n Você vai jogar um jogo da memoria para vencer o boss \n\n Pressione Enter para enfrentar o BOSS...")
                     if not self.minigame_memoria():  # Se o minigame for perdido
                         print("Você perdeu o desafio e será derrotado!")
                         self.derrotas += 1
@@ -579,4 +628,3 @@ def iniciar():
 
 if __name__ == "__main__":
    iniciar()
-
