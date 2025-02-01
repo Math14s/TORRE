@@ -62,20 +62,88 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Criando o botão flutuante
+-- Criando a interface gráfica
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = Player:WaitForChild("PlayerGui")
 
-local Button = Instance.new("TextButton")
-Button.Parent = ScreenGui
-Button.Size = UDim2.new(0, 120, 0, 50)
-Button.Position = UDim2.new(0.85, 0, 0.1, 0) -- Canto superior direito
-Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-Button.Text = "Parar Loop"
+-- Botão para iniciar/parar o loop
+local LoopButton = Instance.new("TextButton")
+LoopButton.Parent = ScreenGui
+LoopButton.Size = UDim2.new(0, 120, 0, 50)
+LoopButton.Position = UDim2.new(0.85, 0, 0.1, 0) -- Canto superior direito
+LoopButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+LoopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoopButton.Text = "Parar Loop"
 
 -- Alternar loop ao clicar no botão
-Button.MouseButton1Click:Connect(function()
+LoopButton.MouseButton1Click:Connect(function()
     LoopEnabled = not LoopEnabled
-    Button.Text = LoopEnabled and "Parar Loop" or "Iniciar Loop"
+    LoopButton.Text = LoopEnabled and "Parar Loop" or "Iniciar Loop"
+end)
+
+-- Criando o botão móvel que mostra o andar mais alto alcançado
+local HighestFloorButton = Instance.new("TextButton")
+HighestFloorButton.Parent = ScreenGui
+HighestFloorButton.Size = UDim2.new(0, 200, 0, 50)
+HighestFloorButton.Position = UDim2.new(0.7, 0, 0.2, 0) -- Posição inicial
+HighestFloorButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+HighestFloorButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+HighestFloorButton.TextScaled = true
+HighestFloorButton.Text = "Andar mais alto: 0"
+HighestFloorButton.Draggable = true -- Torna o botão móvel
+
+-- Função para atualizar o botão com o andar mais alto
+local function UpdateHighestFloor()
+    while task.wait(1) do -- Atualiza a cada 1 segundo
+        local Stats = Player:FindFirstChild("stats")
+        if Stats then
+            local TowerStats = Stats:FindFirstChild("tower")
+            if TowerStats then
+                local HighestFloor = TowerStats:FindFirstChild("highest")
+                if HighestFloor then
+                    HighestFloorButton.Text = "Andar mais alto: " .. HighestFloor.Value
+                end
+            end
+        end
+    end
+end
+
+-- Inicia a atualização do botão em uma nova thread
+task.spawn(UpdateHighestFloor)
+
+-- Script Anti-AFK
+local AntiAFKGui = Instance.new("ScreenGui")
+local AntiAFKLabel = Instance.new("TextLabel")
+local AntiAFKStatus = Instance.new("TextLabel")
+
+AntiAFKGui.Parent = game.CoreGui
+AntiAFKGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+AntiAFKLabel.Parent = AntiAFKGui
+AntiAFKLabel.Active = true
+AntiAFKLabel.BackgroundColor3 = Color3.new(0.176, 0.176, 0.176)
+AntiAFKLabel.Draggable = true -- Permite mover
+AntiAFKLabel.Position = UDim2.new(0.7, 0, 0.1, 0)
+AntiAFKLabel.Size = UDim2.new(0, 370, 0, 52)
+AntiAFKLabel.Font = Enum.Font.SourceSansSemibold
+AntiAFKLabel.Text = "Anti AFK"
+AntiAFKLabel.TextColor3 = Color3.new(0, 1, 1)
+AntiAFKLabel.TextSize = 22
+
+AntiAFKStatus.Parent = AntiAFKLabel
+AntiAFKStatus.BackgroundColor3 = Color3.new(0.176, 0.176, 0.176)
+AntiAFKStatus.Position = UDim2.new(0, 0, 1, 0)
+AntiAFKStatus.Size = UDim2.new(0, 370, 0, 44)
+AntiAFKStatus.Font = Enum.Font.ArialBold
+AntiAFKStatus.Text = "Status: Active"
+AntiAFKStatus.TextColor3 = Color3.new(0, 1, 1)
+AntiAFKStatus.TextSize = 20
+
+local VirtualUser = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+    AntiAFKStatus.Text = "Roblox tentou te expulsar, mas EU BOTEI ELE PRA MAMAR"
+    wait(4)
+    AntiAFKStatus.Text = "Status: ATIVO"
 end)
